@@ -16,7 +16,7 @@ RUN addgroup -g 1001 -S nodejs && \
 RUN mkdir -p /app/data && chown -R nodejs:nodejs /app/data
 
 # Copiar dependencias primero (cache de capas Docker)
-COPY --chown=nodejs:nodejs package.json ./
+COPY --chown=nodejs:nodejs package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 # Copiar codigo de la aplicacion

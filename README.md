@@ -128,7 +128,7 @@ Variables opcionales:
 ### 3. Levantar el contenedor
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 Verifica que está corriendo:

@@ -7,7 +7,6 @@
 
 # Dependencias de Node.js
 node_modules/
-package-lock.json
 npm-debug.log*
 
 # Datos personales (descomenta si NO quieres backup del JSON en git)
