@@ -1,0 +1,31 @@
+# ============================================
+# REGISTRO-KIKO .gitignore
+# ============================================
+
+# Variables de entorno (NUNCA subir)
+.env
+
+# Dependencias de Node.js
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Datos personales (descomenta si NO quieres backup del JSON en git)
+data/candidaturas.json
+
+# Docker
+*.pid
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
