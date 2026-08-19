@@ -1,6 +1,6 @@
 {
   "name": "registro-kiko",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Panel de control de candidaturas laborales",
   "main": "server.js",
   "scripts": {
@@ -10,6 +10,8 @@
   "dependencies": {
     "express": "^4.19.2",
     "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.4.0",
     "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
@@ -17,5 +19,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
