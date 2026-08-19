@@ -57,7 +57,13 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
+      // 'unsafe-inline' necesario: public/index.html usa un <script> inline
+      // y atributos onclick="" en la tabla de candidaturas. scriptSrcAttr
+      // es una directiva CSP3 separada de scriptSrc: sin esto helmet la
+      // pone a 'none' por defecto y bloquea los onclick="" aunque
+      // scriptSrc permita 'unsafe-inline'.
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:"],
       connectSrc: ["'self'"],
       fontSrc: ["'self'"],
@@ -121,6 +127,11 @@ app.use('/api/analizar', groqLimiter);
 // BODY PARSING
 // ============================================
 app.use(express.json({ limit: '256kb' }));
+
+// ============================================
+// ARCHIVOS ESTATICOS (frontend)
+// ============================================
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ============================================
 // LOGGER SIMPLE
