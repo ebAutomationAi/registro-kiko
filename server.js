@@ -206,6 +206,36 @@ function sanitizeString(str, maxLen = 500) {
   return str.trim().slice(0, maxLen);
 }
 
+function sanitizeStringArray(arr, maxLen = 300) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map(a => sanitizeString(a, maxLen)).filter(Boolean);
+}
+
+const MATCH_VALUES = ['alto', 'medio', 'bajo'];
+
+function sanitizeMatch(val) {
+  const v = sanitizeString(val, 10).toLowerCase();
+  return MATCH_VALUES.includes(v) ? v : '';
+}
+
+// Acepta tanto strings sueltos (formato antiguo / salida de Groq) como
+// objetos { texto, tipo }. tipo por defecto 'warning' si no es 'danger'.
+function sanitizeAlertas(arr) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map(a => {
+    if (typeof a === 'string') {
+      const texto = sanitizeString(a, 300);
+      return texto ? { texto, tipo: 'warning' } : null;
+    }
+    if (a && typeof a === 'object') {
+      const texto = sanitizeString(a.texto, 300);
+      const tipo = a.tipo === 'danger' ? 'danger' : 'warning';
+      return texto ? { texto, tipo } : null;
+    }
+    return null;
+  }).filter(Boolean);
+}
+
 // ============================================
 // ENDPOINTS DE AUTENTICACION
 // ============================================
@@ -270,9 +300,13 @@ app.post('/api/candidaturas', authMiddleware, (req, res) => {
     fecha_actualizacion: new Date().toISOString(),
     url_oferta: sanitizeString(body.url_oferta, 500) || '',
     notas: sanitizeString(body.notas, 2000) || '',
-    alertas: Array.isArray(body.alertas)
-      ? body.alertas.map(a => sanitizeString(a, 300)).filter(Boolean)
-      : [],
+    alertas: sanitizeAlertas(body.alertas),
+    match: sanitizeMatch(body.match),
+    cv: sanitizeString(body.cv, 200) || '',
+    carta: sanitizeString(body.carta, 200) || '',
+    empresa_desc: sanitizeString(body.empresa_desc, 2000) || '',
+    responsabilidades: sanitizeStringArray(body.responsabilidades, 300),
+    argumentos: sanitizeStringArray(body.argumentos, 300),
     creado_en: new Date().toISOString()
   };
 
@@ -301,11 +335,13 @@ app.put('/api/candidaturas/:id', authMiddleware, (req, res) => {
   if (body.fecha_postulacion !== undefined) updates.fecha_postulacion = sanitizeString(body.fecha_postulacion, 20);
   if (body.url_oferta !== undefined) updates.url_oferta = sanitizeString(body.url_oferta, 500);
   if (body.notas !== undefined) updates.notas = sanitizeString(body.notas, 2000);
-  if (body.alertas !== undefined) {
-    updates.alertas = Array.isArray(body.alertas)
-      ? body.alertas.map(a => sanitizeString(a, 300)).filter(Boolean)
-      : [];
-  }
+  if (body.alertas !== undefined) updates.alertas = sanitizeAlertas(body.alertas);
+  if (body.match !== undefined) updates.match = sanitizeMatch(body.match);
+  if (body.cv !== undefined) updates.cv = sanitizeString(body.cv, 200);
+  if (body.carta !== undefined) updates.carta = sanitizeString(body.carta, 200);
+  if (body.empresa_desc !== undefined) updates.empresa_desc = sanitizeString(body.empresa_desc, 2000);
+  if (body.responsabilidades !== undefined) updates.responsabilidades = sanitizeStringArray(body.responsabilidades, 300);
+  if (body.argumentos !== undefined) updates.argumentos = sanitizeStringArray(body.argumentos, 300);
 
   candidaturas[idx] = {
     ...candidaturas[idx],
@@ -369,6 +405,8 @@ Extrae la informacion relevante del texto de la oferta y devuelvela EXCLUSIVAMEN
   "contrato": "tipo de contrato (Indefinido, Temporal, Freelance, Practicas, etc.)",
   "horario": "jornada (Completa, Parcial, Flexible, etc.)",
   "ubicacion": "ciudad / remoto / hibrido",
+  "empresa_desc": "breve descripcion de la empresa si aparece en el texto (sector, tamano, etc.), si no vacio",
+  "responsabilidades": ["lista de responsabilidades o funciones del puesto tal como aparecen en el texto"],
   "alertas": ["lista de red flags o alertas detectadas, o vacio"],
   "notas": "cualquier detalle relevante adicional",
   "url_oferta": "URL si aparece en el texto, si no vacio"
@@ -387,7 +425,7 @@ REGLAS:
       ],
       model: 'llama-3.1-70b-versatile',
       temperature: 0.2,
-      max_tokens: 1024,
+      max_tokens: 1536,
       response_format: { type: 'json_object' }
     }, { signal: controller.signal });
 
@@ -412,9 +450,9 @@ REGLAS:
       contrato: sanitizeString(resultado.contrato, 100) || 'No especificado',
       horario: sanitizeString(resultado.horario, 100) || 'No especificado',
       ubicacion: sanitizeString(resultado.ubicacion, 200) || 'No especificado',
-      alertas: Array.isArray(resultado.alertas)
-        ? resultado.alertas.map(a => sanitizeString(a, 300)).filter(Boolean)
-        : [],
+      empresa_desc: sanitizeString(resultado.empresa_desc, 2000) || '',
+      responsabilidades: sanitizeStringArray(resultado.responsabilidades, 300),
+      alertas: sanitizeAlertas(resultado.alertas),
       notas: sanitizeString(resultado.notas, 2000) || '',
       url_oferta: sanitizeString(resultado.url_oferta, 500) || ''
     };
@@ -439,7 +477,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.1.0'
+    version: process.env.npm_package_version || '1.2.0'
   });
 });
 
@@ -470,7 +508,7 @@ app.use((req, res) => {
 // INICIAR SERVIDOR
 // ============================================
 app.listen(PORT, '0.0.0.0', () => {
-  log('INFO', `Registro-Kiko v1.1.0 corriendo en puerto ${PORT}`);
+  log('INFO', `Registro-Kiko v1.2.0 corriendo en puerto ${PORT}`);
   log('INFO', `Datos en: ${CANDIDATURAS_FILE}`);
   ensureDataDir();
 });

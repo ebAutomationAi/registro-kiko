@@ -12,6 +12,10 @@ npm-debug.log*
 # Datos personales (descomenta si NO quieres backup del JSON en git)
 data/candidaturas.json
 data/*.backup.*
+data/candidaturas_reales.json
+
+# Capturas de pantalla (pueden contener datos personales)
+Captura de pantalla*.png
 
 # Docker
 *.pid

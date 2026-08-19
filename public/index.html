@@ -407,6 +407,39 @@
       border-left: 2px solid var(--danger);
     }
 
+    .alerta-tag-warning {
+      color: var(--warning);
+      background: rgba(245, 158, 11, 0.08);
+      border-left-color: var(--warning);
+    }
+
+    .match-badge-alto {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--success);
+    }
+
+    .match-badge-medio {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+
+    .match-badge-bajo {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+    }
+
+    .form-section-label {
+      grid-column: 1 / -1;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 6px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
     .salario-cell {
       font-family: 'SF Mono', Monaco, monospace;
       font-size: 0.85rem;
@@ -547,6 +580,142 @@
       display: flex;
       justify-content: flex-end;
       gap: 10px;
+    }
+
+    .clickable-company {
+      cursor: pointer;
+      border-radius: 8px;
+      margin: -6px;
+      padding: 6px;
+      transition: background 0.15s;
+    }
+
+    .clickable-company:hover {
+      background: var(--bg-hover);
+    }
+
+    .clickable-company:hover .empresa-cell {
+      color: var(--accent);
+    }
+
+    .detail-company {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .detail-puesto {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 2px;
+    }
+
+    .detail-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .detail-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--bg-hover);
+      color: var(--text-muted);
+    }
+
+    .detail-section {
+      margin-top: 22px;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 10px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .detail-item-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .detail-item-val {
+      font-size: 0.9rem;
+    }
+
+    .detail-notes {
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: pre-wrap;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .detail-empty {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    .detail-link {
+      color: var(--accent);
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+
+    .detail-link:hover {
+      text-decoration: underline;
+    }
+
+    .detail-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .detail-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .detail-list li {
+      font-size: 0.88rem;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .detail-list li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+    }
+
+    .detail-argumentos-box {
+      background: rgba(59, 130, 246, 0.06);
+      border-left: 2px solid var(--accent);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .detail-argumentos-box .detail-list li::before {
+      color: var(--accent);
     }
 
     .analyze-box {
@@ -861,14 +1030,64 @@ Desarrollador Full Stack en TechNova Solutions. Salario: 45k-55k. Contrato indef
             <textarea id="fNotas" placeholder="Detalles adicionales, contactos, fechas de entrevista..."></textarea>
           </div>
           <div class="form-group form-full">
-            <label>Alertas (separadas por coma)</label>
-            <input type="text" id="fAlertas" placeholder="Salario bajo, requisitos excesivos, proceso lento...">
+            <label>Alertas (una por linea)</label>
+            <textarea id="fAlertas" placeholder="Salario bajo&#10;Proceso lento"></textarea>
+          </div>
+          <div class="form-group form-full">
+            <label>Alertas graves (una por linea)</label>
+            <textarea id="fAlertasGraves" placeholder="Senales de posible fraude o empresa dudosa"></textarea>
+          </div>
+
+          <div class="form-section-label">Detalle ampliado (opcional)</div>
+
+          <div class="form-group">
+            <label>Match</label>
+            <select id="fMatch">
+              <option value="">Sin evaluar</option>
+              <option value="bajo">Bajo</option>
+              <option value="medio">Medio</option>
+              <option value="alto">Alto</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>CV usado</label>
+            <input type="text" id="fCv" placeholder="Ej: CV_general.pdf">
+          </div>
+          <div class="form-group form-full">
+            <label>Carta de presentacion</label>
+            <input type="text" id="fCarta" placeholder="Ej: Si (espanol) / No">
+          </div>
+          <div class="form-group form-full">
+            <label>Descripcion de la empresa</label>
+            <textarea id="fEmpresaDesc" placeholder="Sector, tamano, contexto de la empresa..."></textarea>
+          </div>
+          <div class="form-group form-full">
+            <label>Responsabilidades del puesto (una por linea)</label>
+            <textarea id="fResponsabilidades" placeholder="Gestion de X&#10;Coordinacion con Y"></textarea>
+          </div>
+          <div class="form-group form-full">
+            <label>Argumentos usados en la candidatura (uno por linea)</label>
+            <textarea id="fArgumentos" placeholder="Experiencia en X aplicable a este puesto"></textarea>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
         <button class="btn btn-primary" onclick="saveCandidatura()" id="btnSave">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="detailModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Detalle de la candidatura</h2>
+        <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeDetailModal()">Cerrar</button>
+        <button class="btn btn-primary" onclick="editFromDetail()">Editar</button>
       </div>
     </div>
   </div>
@@ -1054,13 +1273,17 @@ Desarrollador Full Stack en TechNova Solutions. Salario: 45k-55k. Contrato indef
 
       tbody.innerHTML = filtered.map(c => {
         const badgeClass = 'badge-' + (c.estado || 'pendiente').toLowerCase().replace(/\s+/g, '');
-        const alertasHtml = (c.alertas && c.alertas.length)
-          ? c.alertas.map(a => '<span class="alerta-tag">! ' + escapeHtml(a) + '</span>').join('')
+        const alertasNorm = normalizeAlertas(c.alertas);
+        const alertasHtml = alertasNorm.length
+          ? alertasNorm.map(a => '<span class="alerta-tag' + (a.tipo === 'danger' ? '' : ' alerta-tag-warning') + '">' +
+              (a.tipo === 'danger' ? '⛔' : '⚠') + ' ' + escapeHtml(a.texto) + '</span>').join('')
           : '<span style="color:var(--text-muted);font-size:0.8rem;">-</span>';
         return '<tr>' +
-          '<td><div class="empresa-cell">' + escapeHtml(c.empresa || '') + '</div>' +
+          '<td><div class="clickable-company" onclick="openDetailModal(\'' + c.id + '\')" title="Ver detalle">' +
+          '<div class="empresa-cell">' + escapeHtml(c.empresa || '') + '</div>' +
           '<div class="puesto-cell">' + escapeHtml(c.puesto || '') + '</div>' +
-          '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">' + escapeHtml(c.portal || '') + '</div></td>' +
+          '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">' + escapeHtml(c.portal || '') + '</div>' +
+          '</div></td>' +
           '<td><span class="badge ' + badgeClass + '">' + escapeHtml(c.estado || 'Pendiente') + '</span></td>' +
           '<td class="salario-cell">' + escapeHtml(c.salario || 'No especificado') + '</td>' +
           '<td>' + escapeHtml(c.ubicacion || '-') + '</td>' +
@@ -1093,6 +1316,21 @@ Desarrollador Full Stack en TechNova Solutions. Salario: 45k-55k. Contrato indef
       return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
+    // Acepta tanto alertas antiguas (string suelto) como el formato nuevo
+    // { texto, tipo }, para no romper candidaturas guardadas antes de v1.2.0.
+    function normalizeAlertas(arr) {
+      if (!Array.isArray(arr)) return [];
+      return arr.map(a => {
+        if (typeof a === 'string') return { texto: a, tipo: 'warning' };
+        if (a && typeof a === 'object') return { texto: a.texto || '', tipo: a.tipo === 'danger' ? 'danger' : 'warning' };
+        return { texto: '', tipo: 'warning' };
+      }).filter(a => a.texto);
+    }
+
+    function linesToArray(text) {
+      return text.split('\n').map(s => s.trim()).filter(Boolean);
+    }
+
     function openAddModal() {
       editingId = null;
       document.getElementById('modalTitle').textContent = 'Nueva Candidatura';
@@ -1118,7 +1356,15 @@ Desarrollador Full Stack en TechNova Solutions. Salario: 45k-55k. Contrato indef
       document.getElementById('fFecha').value = c.fecha_postulacion || '';
       document.getElementById('fUrl').value = c.url_oferta || '';
       document.getElementById('fNotas').value = c.notas || '';
-      document.getElementById('fAlertas').value = (c.alertas || []).join(', ');
+      const alertasNorm = normalizeAlertas(c.alertas);
+      document.getElementById('fAlertas').value = alertasNorm.filter(a => a.tipo !== 'danger').map(a => a.texto).join('\n');
+      document.getElementById('fAlertasGraves').value = alertasNorm.filter(a => a.tipo === 'danger').map(a => a.texto).join('\n');
+      document.getElementById('fMatch').value = c.match || '';
+      document.getElementById('fCv').value = c.cv || '';
+      document.getElementById('fCarta').value = c.carta || '';
+      document.getElementById('fEmpresaDesc').value = c.empresa_desc || '';
+      document.getElementById('fResponsabilidades').value = (c.responsabilidades || []).join('\n');
+      document.getElementById('fArgumentos').value = (c.argumentos || []).join('\n');
       document.getElementById('modalOverlay').classList.add('active');
     }
 
@@ -1139,6 +1385,13 @@ Desarrollador Full Stack en TechNova Solutions. Salario: 45k-55k. Contrato indef
       document.getElementById('fUrl').value = '';
       document.getElementById('fNotas').value = '';
       document.getElementById('fAlertas').value = '';
+      document.getElementById('fAlertasGraves').value = '';
+      document.getElementById('fMatch').value = '';
+      document.getElementById('fCv').value = '';
+      document.getElementById('fCarta').value = '';
+      document.getElementById('fEmpresaDesc').value = '';
+      document.getElementById('fResponsabilidades').value = '';
+      document.getElementById('fArgumentos').value = '';
     }
 
     function fillManual() {
@@ -1173,8 +1426,10 @@ Desarrollador Full Stack en TechNova Solutions. Salario: 45k-55k. Contrato indef
         document.getElementById('fHorario').value = data.horario || '';
         document.getElementById('fUbicacion').value = data.ubicacion || '';
         document.getElementById('fNotas').value = data.notas || '';
-        document.getElementById('fAlertas').value = (data.alertas || []).join(', ');
+        document.getElementById('fAlertas').value = normalizeAlertas(data.alertas).map(a => a.texto).join('\n');
         document.getElementById('fUrl').value = data.url_oferta || '';
+        document.getElementById('fEmpresaDesc').value = data.empresa_desc || '';
+        document.getElementById('fResponsabilidades').value = (data.responsabilidades || []).join('\n');
 
         document.getElementById('analyzeSection').style.display = 'none';
         toast('Datos extraidos por Groq. Revisa y guarda.', 'success');
@@ -1206,7 +1461,16 @@ Desarrollador Full Stack en TechNova Solutions. Salario: 45k-55k. Contrato indef
         fecha_postulacion: document.getElementById('fFecha').value,
         url_oferta: document.getElementById('fUrl').value.trim(),
         notas: document.getElementById('fNotas').value.trim(),
-        alertas: document.getElementById('fAlertas').value.split(',').map(s => s.trim()).filter(Boolean)
+        alertas: [
+          ...linesToArray(document.getElementById('fAlertas').value).map(texto => ({ texto, tipo: 'warning' })),
+          ...linesToArray(document.getElementById('fAlertasGraves').value).map(texto => ({ texto, tipo: 'danger' }))
+        ],
+        match: document.getElementById('fMatch').value,
+        cv: document.getElementById('fCv').value.trim(),
+        carta: document.getElementById('fCarta').value.trim(),
+        empresa_desc: document.getElementById('fEmpresaDesc').value.trim(),
+        responsabilidades: linesToArray(document.getElementById('fResponsabilidades').value),
+        argumentos: linesToArray(document.getElementById('fArgumentos').value)
       };
 
       if (!payload.empresa || !payload.puesto) {
@@ -1235,6 +1499,88 @@ Desarrollador Full Stack en TechNova Solutions. Salario: 45k-55k. Contrato indef
     function editCandidatura(id) {
       const c = candidaturas.find(x => x.id === id);
       if (c) openEditModal(c);
+    }
+
+    let detailId = null;
+
+    function openDetailModal(id) {
+      const c = candidaturas.find(x => x.id === id);
+      if (!c) return;
+      detailId = id;
+      renderDetail(c);
+      document.getElementById('detailModalOverlay').classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModalOverlay').classList.remove('active');
+      detailId = null;
+    }
+
+    function editFromDetail() {
+      if (!detailId) return;
+      const id = detailId;
+      closeDetailModal();
+      editCandidatura(id);
+    }
+
+    function renderDetail(c) {
+      const badgeClass = 'badge-' + (c.estado || 'pendiente').toLowerCase().replace(/\s+/g, '');
+      const alertasNorm = normalizeAlertas(c.alertas);
+      const alertasHtml = alertasNorm.length
+        ? alertasNorm.map(a => '<span class="alerta-tag' + (a.tipo === 'danger' ? '' : ' alerta-tag-warning') + '">' +
+            (a.tipo === 'danger' ? '⛔' : '⚠') + ' ' + escapeHtml(a.texto) + '</span>').join('')
+        : '<span class="detail-empty">Sin alertas</span>';
+      const urlHtml = c.url_oferta
+        ? '<a class="detail-link" href="' + escapeHtml(c.url_oferta) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(c.url_oferta) + '</a>'
+        : '<span class="detail-empty">Sin URL</span>';
+      const notasHtml = c.notas
+        ? '<div class="detail-notes">' + escapeHtml(c.notas) + '</div>'
+        : '<span class="detail-empty">Sin notas</span>';
+      const matchLabel = { alto: 'Match alto', medio: 'Match medio', bajo: 'Match bajo' }[c.match] || '';
+      const matchHtml = matchLabel
+        ? '<span class="detail-tag match-badge-' + c.match + '">' + matchLabel + '</span>'
+        : '';
+      const responsabilidades = Array.isArray(c.responsabilidades) ? c.responsabilidades : [];
+      const argumentos = Array.isArray(c.argumentos) ? c.argumentos : [];
+
+      const empresaDescHtml = c.empresa_desc
+        ? '<div class="detail-section"><div class="detail-label">Sobre la empresa</div><div class="detail-desc">' + escapeHtml(c.empresa_desc) + '</div></div>'
+        : '';
+      const responsabilidadesHtml = responsabilidades.length
+        ? '<div class="detail-section"><div class="detail-label">Responsabilidades del puesto</div><ul class="detail-list">' +
+          responsabilidades.map(r => '<li>' + escapeHtml(r) + '</li>').join('') + '</ul></div>'
+        : '';
+      const argumentosHtml = argumentos.length
+        ? '<div class="detail-section"><div class="detail-label">Lo que argumente en la candidatura</div><div class="detail-argumentos-box"><ul class="detail-list">' +
+          argumentos.map(a => '<li>' + escapeHtml(a) + '</li>').join('') + '</ul></div></div>'
+        : '';
+
+      document.getElementById('detailBody').innerHTML =
+        '<div class="detail-company">' + escapeHtml(c.empresa || '') + '</div>' +
+        '<div class="detail-puesto">' + escapeHtml(c.puesto || '') + '</div>' +
+        '<div class="detail-tags">' +
+        '<span class="badge ' + badgeClass + '">' + escapeHtml(c.estado || 'Pendiente') + '</span>' +
+        matchHtml +
+        '<span class="detail-tag">' + escapeHtml(c.portal || 'No especificado') + '</span>' +
+        '</div>' +
+        empresaDescHtml +
+        responsabilidadesHtml +
+        '<div class="detail-section">' +
+        '<div class="detail-label">Condiciones</div>' +
+        '<div class="detail-grid">' +
+        '<div><div class="detail-item-label">Salario</div><div class="detail-item-val">' + escapeHtml(c.salario || 'No especificado') + '</div></div>' +
+        '<div><div class="detail-item-label">Contrato</div><div class="detail-item-val">' + escapeHtml(c.contrato || 'No especificado') + '</div></div>' +
+        '<div><div class="detail-item-label">Horario</div><div class="detail-item-val">' + escapeHtml(c.horario || 'No especificado') + '</div></div>' +
+        '<div><div class="detail-item-label">Ubicacion</div><div class="detail-item-val">' + escapeHtml(c.ubicacion || 'No especificado') + '</div></div>' +
+        '<div><div class="detail-item-label">Fecha postulacion</div><div class="detail-item-val">' + formatDate(c.fecha_postulacion) + '</div></div>' +
+        '<div><div class="detail-item-label">Ultima actualizacion</div><div class="detail-item-val">' + formatDate(c.fecha_actualizacion) + '</div></div>' +
+        '<div><div class="detail-item-label">CV usado</div><div class="detail-item-val">' + escapeHtml(c.cv || 'No especificado') + '</div></div>' +
+        '<div><div class="detail-item-label">Carta de presentacion</div><div class="detail-item-val">' + escapeHtml(c.carta || 'No especificado') + '</div></div>' +
+        '</div></div>' +
+        '<div class="detail-section"><div class="detail-label">URL de la oferta</div>' + urlHtml + '</div>' +
+        argumentosHtml +
+        '<div class="detail-section"><div class="detail-label">Alertas</div><div class="alertas-list">' + alertasHtml + '</div></div>' +
+        '<div class="detail-section"><div class="detail-label">Notas</div>' + notasHtml + '</div>';
     }
 
     async function deleteCandidatura(id) {
