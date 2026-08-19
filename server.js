@@ -423,7 +423,7 @@ REGLAS:
           content: trimmed
         }
       ],
-      model: 'llama-3.1-70b-versatile',
+      model: 'openai/gpt-oss-120b',
       temperature: 0.2,
       max_tokens: 1536,
       response_format: { type: 'json_object' }
