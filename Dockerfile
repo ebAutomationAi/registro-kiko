@@ -21,6 +21,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 # Copiar codigo de la aplicacion
 COPY --chown=nodejs:nodejs server.js ./
+COPY --chown=nodejs:nodejs email-monitor.js ./
 COPY --chown=nodejs:nodejs public/ ./public/
 
 # Cambiar a usuario no-root

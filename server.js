@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const emailMonitor = require('./email-monitor');
 
 const Groq = require('groq-sdk');
 
@@ -36,6 +37,10 @@ const DATA_DIR = path.join(__dirname, 'data');
 const CANDIDATURAS_FILE = path.join(DATA_DIR, 'candidaturas.json');
 const GROQ_TIMEOUT_MS = 15000;
 const GROQ_MAX_TEXT_LENGTH = 12000;
+// process.env.npm_package_version solo existe si el proceso arranca via "npm
+// start". El Dockerfile lo lanza con "node server.js" directo, asi que se
+// hardcodea aqui para que /api/health no dependa de eso.
+const APP_VERSION = '1.3.0';
 
 const groq = new Groq({ apiKey: GROQ_API_KEY });
 
@@ -56,13 +61,13 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      // 'unsafe-inline' necesario: public/index.html usa un <script> inline
-      // y atributos onclick="" en la tabla de candidaturas. scriptSrcAttr
-      // es una directiva CSP3 separada de scriptSrc: sin esto helmet la
-      // pone a 'none' por defecto y bloquea los onclick="" aunque
-      // scriptSrc permita 'unsafe-inline'.
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      // CSS externo (public/style.css): 'unsafe-inline' ya no necesario
+      styleSrc: ["'self'"],
+      // JS externo (public/app.js): 'unsafe-inline' ya no necesario en scriptSrc.
+      // scriptSrcAttr sigue siendo necesario: el HTML usa atributos onclick=""
+      // que CSP3 trata como directiva separada. Sin esto helmet la pone a
+      // 'none' por defecto y bloquea los onclick="" aunque scriptSrc sea 'self'.
+      scriptSrc: ["'self'"],
       scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:"],
       connectSrc: ["'self'"],
@@ -119,9 +124,21 @@ const groqLimiter = rateLimit({
   message: { error: 'Demasiadas peticiones a Groq. Espera un minuto.' }
 });
 
+// Escanear el buzon via IMAP es mas costoso y esta sujeto a limites de Gmail;
+// se restringe aparte del apiLimiter generico (60/min es demasiado permisivo
+// para logins IMAP repetidos).
+const emailScanLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados escaneos de email. Espera un minuto.' }
+});
+
 app.use('/api/login', loginLimiter);
 app.use('/api/', apiLimiter);
 app.use('/api/analizar', groqLimiter);
+app.use('/api/email/scan', emailScanLimiter);
 
 // ============================================
 // BODY PARSING
@@ -471,13 +488,26 @@ REGLAS:
 });
 
 // ============================================
+// ENDPOINTS EMAIL MONITOR
+// ============================================
+app.get('/api/email/scan', authMiddleware, async (req, res) => {
+  const result = await emailMonitor.scanEmails();
+  res.json(result);
+});
+
+app.get('/api/email/status', authMiddleware, (req, res) => {
+  res.json(emailMonitor.getStatus());
+});
+
+// ============================================
 // HEALTH CHECK
 // ============================================
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.2.0'
+    version: APP_VERSION,
+    emailMonitor: emailMonitor.getStatus()
   });
 });
 
@@ -507,8 +537,29 @@ app.use((req, res) => {
 // ============================================
 // INICIAR SERVIDOR
 // ============================================
-app.listen(PORT, '0.0.0.0', () => {
-  log('INFO', `Registro-Kiko v1.2.0 corriendo en puerto ${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  log('INFO', `Registro-Kiko v${APP_VERSION} corriendo en puerto ${PORT}`);
   log('INFO', `Datos en: ${CANDIDATURAS_FILE}`);
   ensureDataDir();
+
+  // Iniciar monitor de email si las credenciales están configuradas
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    emailMonitor.startMonitor();
+  } else {
+    log('WARN', 'Monitor de email desactivado: GMAIL_USER o GMAIL_APP_PASSWORD no definidos');
+  }
 });
+
+// ============================================
+// APAGADO ORDENADO
+// ============================================
+// Docker envia SIGTERM al parar el contenedor. Sin esto el intervalo del
+// email monitor (setInterval en email-monitor.js) queda activo hasta que el
+// proceso muere de forma abrupta.
+function shutdown(signal) {
+  log('INFO', `${signal} recibido, cerrando servidor...`);
+  emailMonitor.stopMonitor();
+  server.close(() => process.exit(0));
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

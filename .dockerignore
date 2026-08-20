@@ -9,8 +9,7 @@ npm-debug.log
 # Datos y secretos
 .env
 .env.example
-data/*.json
-data/*.backup
+data/
 
 # Documentacion
 README.md

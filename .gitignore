@@ -9,10 +9,9 @@
 node_modules/
 npm-debug.log*
 
-# Datos personales (descomenta si NO quieres backup del JSON en git)
-data/candidaturas.json
-data/*.backup.*
-data/candidaturas_reales.json
+# Datos personales — todo lo que haya en data/ (candidaturas, backups, .bak,
+# exports manuales, etc.). Nunca debe llegar a un repo publico.
+data/
 
 # Capturas de pantalla (pueden contener datos personales)
 Captura de pantalla*.png
